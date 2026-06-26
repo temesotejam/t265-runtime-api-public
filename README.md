@@ -87,6 +87,10 @@ To run for a specific number of seconds:
 ./demo_minimal_pose 10
 ```
 
+Without an argument, the demo runs for 5 seconds. The duration argument accepts
+1 to 3600 seconds, so `./demo_minimal_pose 300` runs for 5 minutes and
+`./demo_minimal_pose 3600` runs for 1 hour.
+
 `demo_minimal_pose` opens one T265, starts pose / gyro / accel / fisheye
 metadata streams, prints the latest pose at about 10 Hz, and saves no images or
 CSV files. The firmware binary is not included in this repository; the fetch

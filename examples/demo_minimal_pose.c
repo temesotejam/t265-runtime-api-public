@@ -1,17 +1,22 @@
 /*
- * Minimal T265 Pose Demo
+ * T265の最小Poseデモ
  *
- * Purpose:
- * - Open one runtime T265 device.
- * - Start pose, gyro, accel, and fisheye metadata streams.
- * - Print the latest pose at about 10 Hz.
- * - Save no images or CSV files.
+ * 目的:
+ * - runtime状態のT265を1台だけ開く。
+ * - pose / gyro / accel / fisheye metadata streamを開始する。
+ * - 最新poseを約10Hzで標準出力へ表示する。
+ * - 画像やCSVは保存しない。
  *
- * Usage:
+ * 使い方:
  *   ./demo_minimal_pose
  *   ./demo_minimal_pose 10
  *
- * Expected result:
+ * 実行時間:
+ * - 引数なしなら5秒間実行する。
+ * - 引数で秒数を指定できる。例: 10秒なら ./demo_minimal_pose 10
+ * - 最大指定時間は3600秒、つまり1時間。
+ *
+ * 期待する結果:
  *   DEMO_MINIMAL_POSE_RESULT: PASS
  */
 
@@ -27,6 +32,11 @@
 #define DEMO_SLEEP_US (1000000 / DEMO_POLL_HZ)
 #define DEMO_MAX_DURATION_SEC 3600
 
+/*
+ * 引数処理は最小限にしている:
+ * - 引数なしなら、デフォルトの5秒スモークテスト。
+ * - 正の整数を1つ渡すと、その秒数だけ実行する。
+ */
 static int parse_duration_sec(int argc, char **argv)
 {
     char *end = NULL;
@@ -68,12 +78,23 @@ int main(int argc, char **argv)
     printf("--- Minimal T265 Pose Demo ---\n");
     printf("duration_sec: %d\n", duration_sec);
 
+    /*
+     * t265_open() は1台だけ開くための簡易API。
+     * ここでは、事前に ensure_t265_runtime.sh などで
+     * カメラがruntime状態になっている前提で使う。
+     */
     dev = t265_open();
     if (!dev) {
         fprintf(stderr, "Failed to open a runtime T265 device.\n");
         goto cleanup;
     }
 
+    /*
+     * このデモで使う3系統のデータを有効化する:
+     * - fisheye metadata。画像保存はしない。
+     * - IMU sample。gyroとaccelを含む。
+     * - pose sample。
+     */
     if (t265_configure_streams(dev, 1, 1, 1) != T265_OK) {
         fprintf(stderr, "Failed to configure pose/imu/fisheye streams.\n");
         goto cleanup;
@@ -84,6 +105,11 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    /*
+     * readerはUSB読み取り用のバックグラウンドスレッドを持つ。
+     * 下のmain loopでは、蓄積済みの最新値だけを取得するため、
+     * 全パケットを逐次処理する必要はない。
+     */
     reader = t265_reader_create(dev);
     if (!reader) {
         fprintf(stderr, "Failed to create reader.\n");
@@ -95,6 +121,12 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    /*
+     * 約10Hzでpollする。
+     * poseは人間が見やすいように表示する。
+     * gyro / accel / fisheye metadataは、出力を増やしすぎないため、
+     * streamが生きているかだけを確認する。
+     */
     for (int i = 0; i < loop_count; ++i) {
         t265_pose_sample pose;
         t265_imu_sample gyro;
@@ -136,6 +168,7 @@ int main(int argc, char **argv)
         usleep(DEMO_SLEEP_US);
     }
 
+    /* reader statsは、バックグラウンドスレッドで受け取った累積カウント。 */
     {
         t265_reader_stats stats;
         if (t265_get_reader_stats(reader, &stats) == T265_OK) {
@@ -154,6 +187,11 @@ int main(int argc, char **argv)
     printf("  accel:   %s\n", accel_seen ? "yes" : "no");
     printf("  fisheye: %s\n", fisheye_seen ? "yes" : "no");
 
+    /*
+     * このデモの最小成功条件は、pose / gyro / accelが取得できること。
+     * fisheye metadataも上で確認しているが、画像本体の保存やdecodeは
+     * 意図的に行わない。
+     */
     if (pose_seen && gyro_seen && accel_seen) {
         printf("DEMO_MINIMAL_POSE_RESULT: PASS\n");
         rc = 0;
@@ -162,6 +200,10 @@ int main(int argc, char **argv)
     }
 
 cleanup:
+    /*
+     * runtimeをstop/closeする前に、readerスレッドを先に止めて解放する。
+     * 作成に成功したオブジェクトだけをcleanupする。
+     */
     if (reader) {
         t265_reader_free(reader);
     }
