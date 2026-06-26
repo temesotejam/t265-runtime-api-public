@@ -21,7 +21,8 @@ EXAMPLES = \
 	example_open_by_role \
 	example_simple_reader \
 	example_multi_queue \
-	example_image_queue
+	example_image_queue \
+	demo_minimal_pose
 
 TOOLS = \
 	t265_boot_libusb \
@@ -62,6 +63,9 @@ example_multi_queue: examples/example_multi_queue.c $(COMMON_SRC)
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
 example_image_queue: examples/example_image_queue.c $(COMMON_SRC)
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
+demo_minimal_pose: examples/demo_minimal_pose.c $(COMMON_SRC)
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
 tools/t265_fw_target.o: tools/t265_fw_target.bin

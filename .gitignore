@@ -16,12 +16,14 @@ firmware/*.mvcmd
 /example_simple_reader
 /example_multi_queue
 /example_image_queue
+/demo_minimal_pose
 /t265_runtime_image_queue_long_run_probe
 /t265_runtime_image_save_worker_probe
 /t265_runtime_pose_timestamp_reader_probe
 /t265_runtime_sync_probe
 /t265_multi_latest_long_run
 /t265_image_save_worker
+tools/t265_fw_target.bin.tmp
 
 # Generated data
 *.pgm

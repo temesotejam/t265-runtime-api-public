@@ -68,6 +68,36 @@ Build:
 make all
 ```
 
+## Minimal One-Device Demo
+
+For the smallest end-to-end check, fetch the firmware, build the boot helper
+and the demo, move the T265 to runtime mode, then run:
+
+```sh
+chmod +x scripts/fetch_t265_firmware.sh
+./scripts/fetch_t265_firmware.sh
+make t265_boot_libusb demo_minimal_pose
+./ensure_t265_runtime.sh
+./demo_minimal_pose
+```
+
+To run for a specific number of seconds:
+
+```sh
+./demo_minimal_pose 10
+```
+
+`demo_minimal_pose` opens one T265, starts pose / gyro / accel / fisheye
+metadata streams, prints the latest pose at about 10 Hz, and saves no images or
+CSV files. The firmware binary is not included in this repository; the fetch
+script downloads it locally as `tools/t265_fw_target.bin`.
+
+Basic operation is OK when the demo ends with:
+
+```text
+DEMO_MINIMAL_POSE_RESULT: PASS
+```
+
 Check USB state:
 
 ```sh
