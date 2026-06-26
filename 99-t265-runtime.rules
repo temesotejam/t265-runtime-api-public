@@ -1,0 +1,22 @@
+# Intel RealSense T265 runtime / bootloader access for libusb tools.
+#
+# Purpose:
+# - Allow non-root users on a local desktop session to access T265 through libusb.
+# - This lets ./ensure_t265_runtime.sh and ./t265_boot_libusb run without sudo
+#   after this rule is installed and the device is replugged.
+#
+# Security note:
+# - MODE="0666" is convenient for a dedicated development machine.
+# - TAG+="uaccess" is useful on systemd/logind desktop systems.
+# - If this machine is shared, consider replacing MODE="0666" with a dedicated
+#   GROUP assignment and adding only trusted users to that group.
+
+# Movidius / bootloader mode seen before runtime firmware is loaded.
+SUBSYSTEM=="usb", ATTR{idVendor}=="03e7", ATTR{idProduct}=="2150", MODE="0666", TAG+="uaccess"
+
+# T265 runtime device.
+SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0b37", MODE="0666", TAG+="uaccess"
+
+# Alternate runtime ids observed in some T265/librealsense flows.
+SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0af3", MODE="0666", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0b03", MODE="0666", TAG+="uaccess"

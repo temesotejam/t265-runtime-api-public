@@ -1,0 +1,32 @@
+# Firmware binaries are not redistributed
+tools/t265_fw_target.bin
+tools/t265_fw_target.o
+firmware/*.bin
+firmware/*.mvcmd
+*.mvcmd
+
+# Build outputs
+*.o
+/t265_boot_libusb
+/example_list_devices
+/example_latest_state
+/example_multi_latest_state
+/example_open_by_serial
+/example_open_by_role
+/example_simple_reader
+/example_multi_queue
+/example_image_queue
+/t265_runtime_image_queue_long_run_probe
+/t265_runtime_image_save_worker_probe
+/t265_runtime_pose_timestamp_reader_probe
+/t265_runtime_sync_probe
+/t265_multi_latest_long_run
+/t265_image_save_worker
+
+# Generated data
+*.pgm
+*.log
+*.csv
+
+# Local device-specific config
+t265_roles.conf
